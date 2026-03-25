@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - '__init__.py'
+permissions:
+  contents: write
 
 jobs:
   tag-version:
