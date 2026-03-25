@@ -25,28 +25,21 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
       
-      - name: Create or update tag
-        uses: actions/github-script@v7
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          script: |
-            const version = '${{ steps.version.outputs.version }}';
-            const tagName = `v${version}`;
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          body: |
+            ## What's New
+            <!-- Add release notes here -->
             
-            const { data: existingTags } = await github.rest.repos.listTags({
-              owner: 'FordenHillson',
-              repo: 'SubstancePainter_HelloExport-V3'
-            });
-            
-            const tagExists = existingTags.find(t => t.name === tagName);
-            
-            if (tagExists) {
-              console.log(`Tag ${tagName} already exists`);
-            } else {
-              await github.rest.git.createRef({
-                owner: 'FordenHillson',
-                repo: 'SubstancePainter_HelloExport-V3',
-                ref: `refs/tags/${tagName}`,
-                sha: '${{ github.sha }}'
-              });
-              console.log(`Created tag: ${tagName}`);
-            }
+            ## Files
+            - `__init__.py` - Main plugin
+            - `updater.py` - Auto-update module  
+            - `Enfusion_template.spexp` - Export preset
+            - `Enfusion_template.json` - Export config
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
