@@ -21,7 +21,7 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          VERSION=$(grep 'VERSION_CODE = ' __init__.py | sed 's/VERSION_CODE = "//;s/"//')
+          VERSION=$(grep 'VERSION_CODE = ' __init__.py | sed 's/VERSION_CODE = "//;s/" *#.*//')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
       
