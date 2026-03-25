@@ -1,0 +1,52 @@
+{
+  "name": "Enfusion_template",
+  "maps": [
+    {
+      "fileName": "$textureSet_GLOBAL_MASK",
+      "channels": [
+        {"destChannel": "R", "srcChannel": "R", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "G", "srcChannel": "G", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "B", "srcChannel": "B", "srcMapType": "documentMap", "srcMapName": "basecolor"}
+      ],
+      "parameters": {"fileFormat": "tif", "bitDepth": "8", "dithering": false}
+    },
+    {
+      "fileName": "$textureSet_VFX",
+      "channels": [
+        {"destChannel": "R", "srcChannel": "R", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "G", "srcChannel": "G", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "B", "srcChannel": "B", "srcMapType": "documentMap", "srcMapName": "basecolor"}
+      ],
+      "parameters": {"fileFormat": "tif", "bitDepth": "8", "dithering": false}
+    },
+    {
+      "fileName": "$textureSet_MCR",
+      "channels": [
+        {"destChannel": "R", "srcChannel": "R", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "G", "srcChannel": "G", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "B", "srcChannel": "B", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "A", "srcChannel": "L", "srcMapType": "documentMap", "srcMapName": "roughness"}
+      ],
+      "parameters": {"fileFormat": "tif", "bitDepth": "8", "dithering": false}
+    },
+    {
+      "fileName": "$textureSet_NMO",
+      "channels": [
+        {"destChannel": "R", "srcChannel": "R", "srcMapType": "virtualMap", "srcMapName": "Normal_DirectX"},
+        {"destChannel": "G", "srcChannel": "G", "srcMapType": "virtualMap", "srcMapName": "Normal_DirectX"},
+        {"destChannel": "B", "srcChannel": "B", "srcMapType": "virtualMap", "srcMapName": "Normal_DirectX"}
+      ],
+      "parameters": {"fileFormat": "tif", "bitDepth": "8", "dithering": false}
+    },
+    {
+      "fileName": "$textureSet_BCR",
+      "channels": [
+        {"destChannel": "R", "srcChannel": "R", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "G", "srcChannel": "G", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "B", "srcChannel": "B", "srcMapType": "documentMap", "srcMapName": "basecolor"},
+        {"destChannel": "A", "srcChannel": "L", "srcMapType": "documentMap", "srcMapName": "roughness"}
+      ],
+      "parameters": {"fileFormat": "tif", "bitDepth": "8", "dithering": false}
+    }
+  ]
+}
