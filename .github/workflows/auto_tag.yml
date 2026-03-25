@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - '__init__.py'
+
 permissions:
   contents: write
 
