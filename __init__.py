@@ -5,6 +5,27 @@ import substance_painter.export
 import substance_painter.project
 import substance_painter.textureset
 import os
+import sys
+import importlib.util
+
+_plugin_folder = os.path.dirname(os.path.abspath(__file__))
+_version_file = os.path.join(_plugin_folder, "version.txt")
+
+VERSION_CODE = "1.0.1"  # VERSION_FOR_GITHUB_ACTION - Update this when releasing
+
+def read_version():
+    try:
+        with open(_version_file, "r") as f:
+            return f.read().strip()
+    except:
+        return VERSION_CODE
+
+VERSION = read_version()
+
+_updater_spec = importlib.util.spec_from_file_location("updater", os.path.join(_plugin_folder, "updater.py"))
+updater = importlib.util.module_from_spec(_updater_spec)
+sys.modules["updater"] = updater
+_updater_spec.loader.exec_module(updater)
 
 plugin_widgets = []
 output_path = ""
@@ -576,10 +597,144 @@ def start_plugin():
     custom_export_layout = QtWidgets.QVBoxLayout()
     layout.addLayout(custom_export_layout)
     
-    #layout.addWidget(bt_export_all)    
+    # Version Update section
+    version_label = QtWidgets.QLabel(f"Version: {VERSION}")
+    version_label.setStyleSheet("color: #888; font-size: 10px;")
     
-    #layout.addWidget(dev_label)
-    #layout.addWidget(bt_logX)
+    global update_status_label, bt_version
+    update_status_label = QtWidgets.QLabel("")
+    update_status_label.setStyleSheet("color: #4CAF50; font-size: 10px;")
+    
+    bt_version = QtWidgets.QPushButton("Version Manager")
+    bt_version.setFixedHeight(30)
+    
+    all_releases_data = []
+    
+    def show_version_dialog():
+        global all_releases_data
+        dialog = QtWidgets.QDialog()
+        dialog.setWindowTitle("Version Manager")
+        dialog.setMinimumWidth(400)
+        dialog_layout = QtWidgets.QVBoxLayout(dialog)
+        
+        current_info = QtWidgets.QLabel(f"Current Version: {VERSION}")
+        current_info.setStyleSheet("font-weight: bold;")
+        dialog_layout.addWidget(current_info)
+        
+        status_info = QtWidgets.QLabel()
+        if all_releases_data:
+            latest = all_releases_data[0]
+            cmp = updater.compare_versions(VERSION, latest['tag'])
+            if cmp < 0:
+                status_info.setText(f"Update available: {latest['tag']}")
+                status_info.setStyleSheet("color: #FF9800;")
+            else:
+                status_info.setText("Up to date")
+                status_info.setStyleSheet("color: #4CAF50;")
+        else:
+            status_info.setText("Unable to check updates")
+            status_info.setStyleSheet("color: #F44336;")
+        dialog_layout.addWidget(status_info)
+        
+        dialog_layout.addWidget(QtWidgets.QLabel(""))
+        
+        update_btn = QtWidgets.QPushButton("Update to Latest")
+        update_btn.setFixedHeight(40)
+        
+        revert_label = QtWidgets.QLabel("Revert to version:")
+        revert_combo = QtWidgets.QComboBox()
+        revert_combo.addItem("Select version...", {"url": None, "tag": None})
+        for rel in all_releases_data:
+            revert_combo.addItem(f"{rel['tag']} - {rel['date']}", {"url": rel['zip_url'], "tag": rel['tag']})
+        
+        dialog_layout.addWidget(update_btn)
+        dialog_layout.addWidget(revert_label)
+        dialog_layout.addWidget(revert_combo)
+        
+        def on_update():
+            if not all_releases_data:
+                return
+            latest = all_releases_data[0]
+            if updater.compare_versions(VERSION, latest['tag']) >= 0:
+                return
+            plugin_folder = updater.get_plugin_folder()
+            success = updater.download_and_extract(latest['zip_url'], plugin_folder, latest['tag'])
+            dialog.close()
+            if success:
+                msg = QtWidgets.QMessageBox()
+                msg.setWindowTitle("Update Successful")
+                msg.setText("Update successful. Please disable and re-enable the plugin to apply changes.")
+                msg.setIcon(QtWidgets.QMessageBox.Information)
+                msg.exec_()
+            else:
+                msg = QtWidgets.QMessageBox()
+                msg.setWindowTitle("Update Failed")
+                msg.setText("Failed to download update. Please try again.")
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.exec_()
+        
+        def on_revert(index):
+            if index <= 0:
+                return
+            reply = QtWidgets.QMessageBox.question(
+                None, "Confirm Revert",
+                f"Revert to {revert_combo.currentText()}?\nThis will replace plugin files.",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+            if reply == QtWidgets.QMessageBox.Yes:
+                data = revert_combo.currentData()
+                zip_url = data["url"]
+                tag = data["tag"]
+                plugin_folder = updater.get_plugin_folder()
+                success = updater.download_and_extract(zip_url, plugin_folder, tag)
+                dialog.close()
+                if success:
+                    msg = QtWidgets.QMessageBox()
+                    msg.setWindowTitle("Revert Successful")
+                    msg.setText("Revert successful. Please disable and re-enable the plugin to apply changes.")
+                    msg.setIcon(QtWidgets.QMessageBox.Information)
+                    msg.exec_()
+                else:
+                    msg = QtWidgets.QMessageBox()
+                    msg.setWindowTitle("Revert Failed")
+                    msg.setText("Failed to download version. Please try again.")
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.exec_()
+                revert_combo.setCurrentIndex(0)
+        
+        update_btn.clicked.connect(on_update)
+        revert_combo.currentIndexChanged.connect(on_revert)
+        
+        close_btn = QtWidgets.QPushButton("Close")
+        close_btn.clicked.connect(dialog.close)
+        dialog_layout.addWidget(close_btn)
+        
+        dialog.exec_()
+    
+    def on_check_updates():
+        global all_releases_data
+        has_update, latest_tag, latest_info, all_releases = updater.check_for_updates(VERSION)
+        all_releases_data = all_releases
+        if not all_releases:
+            update_status_label.setText("Unable to check updates")
+            update_status_label.setStyleSheet("color: #F44336; font-size: 10px;")
+            return
+        
+        if has_update:
+            update_status_label.setText(f"Update available: {latest_tag}")
+            update_status_label.setStyleSheet("color: #FF9800; font-size: 10px;")
+        else:
+            update_status_label.setText("Up to date")
+            update_status_label.setStyleSheet("color: #4CAF50; font-size: 10px;")
+    
+    bt_version.clicked.connect(show_version_dialog)
+    
+    layout.addWidget(version_label)
+    layout.addWidget(bt_version)
+    layout.addWidget(update_status_label)
+    
+    # Auto-check for updates on startup
+    on_check_updates()
 
     # Add the docked widget to the UI
     substance_painter.ui.add_dock_widget(plugin_widget)

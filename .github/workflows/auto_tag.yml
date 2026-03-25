@@ -1,0 +1,49 @@
+name: Auto Tag Version
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '__init__.py'
+
+jobs:
+  tag-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep 'VERSION_CODE = ' __init__.py | sed 's/VERSION_CODE = "//;s/"//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+      
+      - name: Create or update tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.version.outputs.version }}';
+            const tagName = `v${version}`;
+            
+            const { data: existingTags } = await github.rest.repos.listTags({
+              owner: 'FordenHillson',
+              repo: 'SubstancePainter_HelloExport-V3'
+            });
+            
+            const tagExists = existingTags.find(t => t.name === tagName);
+            
+            if (tagExists) {
+              console.log(`Tag ${tagName} already exists`);
+            } else {
+              await github.rest.git.createRef({
+                owner: 'FordenHillson',
+                repo: 'SubstancePainter_HelloExport-V3',
+                ref: `refs/tags/${tagName}`,
+                sha: '${{ github.sha }}'
+              });
+              console.log(`Created tag: ${tagName}`);
+            }
