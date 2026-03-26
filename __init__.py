@@ -11,7 +11,7 @@ import importlib.util
 _plugin_folder = os.path.dirname(os.path.abspath(__file__))
 _version_file = os.path.join(_plugin_folder, "version.txt")
 
-VERSION_CODE = "1.0.5"  # VERSION_FOR_GITHUB_ACTION - Update this when releasing
+VERSION_CODE = "1.0.6"  # VERSION_FOR_GITHUB_ACTION - Update this when releasing
 
 def read_version():
     try:
@@ -614,7 +614,7 @@ def start_plugin():
         global all_releases_data
         dialog = QtWidgets.QDialog()
         dialog.setWindowTitle("Version Manager")
-        dialog.setMinimumWidth(400)
+        dialog.setMinimumWidth(200)
         dialog_layout = QtWidgets.QVBoxLayout(dialog)
         
         current_info = QtWidgets.QLabel(f"Current Version: {VERSION}")
